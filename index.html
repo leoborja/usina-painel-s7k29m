@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel ROI — Usinas Seara</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --tx:#e2e8f0; --mut:#94a3b8; --bd:#334155;
+    --accent:#22c55e; --chip:#0b1220; --chipon:#22c55e; --chipontx:#052e16;
+  }
+  body.light{
+    --bg:#f1f5f9; --card:#ffffff; --tx:#0f172a; --mut:#64748b; --bd:#e2e8f0;
+    --accent:#16a34a; --chip:#eef2f7; --chipon:#16a34a; --chipontx:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,Segoe UI,Roboto,sans-serif;transition:background .2s,color .2s}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 20px 64px}
+  h1{font-size:24px;margin:0 0 4px} .sub{color:var(--mut);font-size:13px;margin-bottom:20px}
+  .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:24px}
+  .seg{display:inline-flex;background:var(--chip);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+  .seg button{background:transparent;color:var(--mut);border:0;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600}
+  .seg button.on{background:var(--chipon);color:var(--chipontx)}
+  .spacer{flex:1}
+  .ghost{background:var(--chip);border:1px solid var(--bd);color:var(--tx);border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin-bottom:26px}
+  .card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--bd)}
+  .card-t{color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  .card-v{font-size:23px;font-weight:700;margin:6px 0 2px} .card-s{color:var(--mut);font-size:12px}
+  .panel{background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--bd);margin-bottom:22px}
+  .panel h2{font-size:16px;margin:0 0 6px} .panel .hint{color:var(--mut);font-size:12px;margin:0 0 14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chip{background:var(--chip);border:1px solid var(--bd);color:var(--mut);border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .chip.on{color:var(--tx);border-color:var(--accent)}
+  .chip .sw{width:9px;height:9px;border-radius:50%}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--bd)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--mut);font-weight:600;font-size:11.5px;text-transform:uppercase}
+  td.pos{color:#22c55e} td.neg{color:#ef4444}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+  .note{color:var(--mut);font-size:12px;line-height:1.6}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @media (max-width:640px){
+    .wrap{padding:18px 13px 48px} h1{font-size:20px} .sub{font-size:12px}
+    .bar{gap:8px} .seg{flex:1} .seg button{flex:1;padding:9px 8px;font-size:12.5px}
+    #theme{flex:1 0 100%} .spacer{display:none}
+    .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    .card{padding:13px} .card-v{font-size:19px}
+    .panel{padding:15px}
+    table{font-size:12.5px;min-width:520px} th,td{padding:7px 8px}
+    #comp table,#comp{min-width:640px}
+  }
+</style></head><body class="light">
+<div class="wrap">
+  <h1>☀️ Painel ROI — Usinas Seara</h1>
+  <div class="sub" id="sub"></div>
+
+  <div class="bar">
+    <div class="seg" id="scope">
+      <button data-s="Ambas" class="on">Ambas</button>
+      <button data-s="Usina 1">Usina 1</button>
+      <button data-s="Usina 2">Usina 2</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="seg" id="theme">
+      <button data-t="light" class="on">☀️ Claro</button>
+      <button data-t="dark">🌙 Escuro</button>
+    </div>
+  </div>
+
+  <div class="grid" id="cards"></div>
+
+  <div class="panel">
+    <h2>Desempenho mensal (competência)</h2>
+    <p class="hint">Escolha as séries. Barras = valores do mês; linha = lucro; linha pontilhada = quanto do CAPEX já foi recuperado (acumulado).</p>
+    <div class="chips" id="chips"></div>
+    <canvas id="chart" height="108"></canvas>
+  </div>
+
+  <div class="panel">
+    <h2>Desempenho por período</h2>
+    <p class="hint">LM = último mês fechado · L3M / L6M = médias mensais dos últimos 3 / 6 meses com receita · Total = acumulado desde o início.</p>
+    <div class="scroll"><table id="periodos"></table></div>
+  </div>
+
+  <div class="panel">
+    <h2>Comparativo por usina</h2>
+    <div class="scroll"><table id="comp"></table></div>
+  </div>
+
+  <p class="note" id="footer"></p>
+</div>
+<script>
+const DATA = {"atualizado": "01/07/2026", "capex": {"Usina 1": 809668.0, "Usina 2": 945505.34}, "nomes": {"Usina 1": "Usina 1 — Fazenda do Seara", "Usina 2": "Usina 2 — João A. Q. Rolla"}, "months": ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"], "mes_aberto": "2026-07", "imposto": 0.1133, "n_socios": 5, "series": {"Usina 1": [{"mes": "2025-07", "receita": 0, "cemig": 3770.22, "imposto": 0.0, "overhead": 2200.0, "despesas": 5970.22, "lucro": -5970.22}, {"mes": "2025-08", "receita": 0, "cemig": 3559.45, "imposto": 0.0, "overhead": 2200.0, "despesas": 5759.45, "lucro": -5759.45}, {"mes": "2025-09", "receita": 0, "cemig": 3562.82, "imposto": 0.0, "overhead": 2200.0, "despesas": 5762.82, "lucro": -5762.82}, {"mes": "2025-10", "receita": 22148.4, "cemig": 3641.16, "imposto": 2509.41, "overhead": 2200.0, "despesas": 8350.57, "lucro": 13797.83}, {"mes": "2025-11", "receita": 13641.77, "cemig": 3632.45, "imposto": 1545.61, "overhead": 2200.0, "despesas": 7378.06, "lucro": 6263.71}, {"mes": "2025-12", "receita": 25633.89, "cemig": 3732.55, "imposto": 2904.32, "overhead": 2200.0, "despesas": 8836.87, "lucro": 16797.02}, {"mes": "2026-01", "receita": 20197.45, "cemig": 3635.98, "imposto": 2288.37, "overhead": 2200.0, "despesas": 8124.35, "lucro": 12073.1}, {"mes": "2026-02", "receita": 21882.56, "cemig": 3708.7, "imposto": 2479.29, "overhead": 2200.0, "despesas": 8387.99, "lucro": 13494.57}, {"mes": "2026-03", "receita": 22837.14, "cemig": 3774.12, "imposto": 2587.45, "overhead": 2200.0, "despesas": 8561.57, "lucro": 14275.57}, {"mes": "2026-04", "receita": 24381.52, "cemig": 5341.99, "imposto": 2762.43, "overhead": 2200.0, "despesas": 10304.42, "lucro": 14077.1}, {"mes": "2026-05", "receita": 22882.75, "cemig": 5519.53, "imposto": 2592.62, "overhead": 996.73, "despesas": 9108.87, "lucro": 13773.88}, {"mes": "2026-06", "receita": 16569.22, "cemig": 0.0, "imposto": 1877.29, "overhead": 1130.51, "despesas": 3007.8, "lucro": 13561.42}, {"mes": "2026-07", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}], "Usina 2": [{"mes": "2025-07", "receita": 0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-10", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-11", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-12", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2026-01", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2026-02", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2026-03", "receita": 0.0, "cemig": 5188.44, "imposto": 0.0, "overhead": 0.0, "despesas": 5188.44, "lucro": -5188.44}, {"mes": "2026-04", "receita": 0.0, "cemig": 5445.76, "imposto": 0.0, "overhead": 0.0, "despesas": 5445.76, "lucro": -5445.76}, {"mes": "2026-05", "receita": 27624.56, "cemig": 5851.57, "imposto": 3129.86, "overhead": 1203.27, "despesas": 10184.7, "lucro": 17439.86}, {"mes": "2026-06", "receita": 15674.89, "cemig": 0.0, "imposto": 1775.97, "overhead": 1069.49, "despesas": 2845.46, "lucro": 12829.43}, {"mes": "2026-07", "receita": 1881.98, "cemig": 0.0, "imposto": 213.23, "overhead": 2200.0, "despesas": 2413.23, "lucro": -531.25}]}, "lucro_real_acum": 131542.67};
+const UK = ['Usina 1','Usina 2'];
+const CORES = {receita:'#22c55e', despesas:'#ef4444', lucro:'#3b82f6', pct:'#f59e0b', pctmes:'#a855f7'};
+let scope = 'Ambas';
+let show = {receita:true, despesas:false, lucro:true, pct:false, pctmes:false};
+let theme = 'light';
+let chart = null;
+
+const fmt = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const money = v => fmt.format(v||0);
+const pct = v => (v*100).toFixed(1).replace('.',',')+'%';
+
+function seriesFor(sc){
+  if(sc!=='Ambas') return DATA.series[sc];
+  return DATA.months.map((m,i)=>{
+    const a=DATA.series['Usina 1'][i], b=DATA.series['Usina 2'][i];
+    const o={mes:m};
+    ['receita','cemig','imposto','overhead','despesas','lucro'].forEach(k=>o[k]=a[k]+b[k]);
+    return o;
+  });
+}
+const capexFor = sc => sc!=='Ambas' ? DATA.capex[sc] : DATA.capex['Usina 1']+DATA.capex['Usina 2'];
+
+function opMonths(sc){ return seriesFor(sc).filter(x=>x.mes!==DATA.mes_aberto && x.receita>0); }
+function sum(arr,k){ return arr.reduce((s,x)=>s+x[k],0); }
+
+function kpis(sc){
+  const s=seriesFor(sc), capex=capexFor(sc);
+  const lucroAcum=sum(s,'lucro'), recAcum=sum(s,'receita');
+  const op=opMonths(sc), l3=op.slice(-3);
+  const rr = l3.length? sum(l3,'lucro')/l3.length : 0;
+  return {
+    capex, lucroAcum, recAcum, rr,
+    roi: capex? rr*12/capex : 0,
+    payback: rr>0? capex/(rr*12) : 0,
+    pctRec: capex? lucroAcum/capex : 0,
+    lucroSocio: rr*12/DATA.n_socios,
+    nOp: op.length,
+  };
+}
+
+function renderCards(){
+  const k=kpis(scope);
+  const cards=[
+    ['CAPEX '+(scope==='Ambas'?'(2 usinas)':'('+scope+')'), money(k.capex), 'investimento na construção'],
+    ['Lucro acumulado (modelo)', money(k.lucroAcum), k.nOp+' meses com receita'],
+    ['ROI/ano', pct(k.roi), 'sobre run-rate dos últimos 3m'],
+    ['Payback', k.payback? k.payback.toFixed(1)+' anos':'—', 'no ritmo atual'],
+    ['% do CAPEX recuperado', pct(k.pctRec), 'lucro modelo ÷ CAPEX'],
+    ['Lucro/mês (run-rate)', money(k.rr), 'média últimos 3 meses'],
+  ];
+  document.getElementById('cards').innerHTML = cards.map(c=>
+    `<div class="card"><div class="card-t">${c[0]}</div><div class="card-v">${c[1]}</div><div class="card-s">${c[2]}</div></div>`).join('');
+}
+
+function renderChips(){
+  const defs=[['receita','Receita'],['despesas','Despesas'],['lucro','Lucro'],['pctmes','% do mês / CAPEX'],['pct','% acum. do CAPEX']];
+  document.getElementById('chips').innerHTML = defs.map(([k,lbl])=>
+    `<span class="chip ${show[k]?'on':''}" data-k="${k}"><span class="sw" style="background:${CORES[k]}"></span>${lbl}</span>`).join('');
+  document.querySelectorAll('#chips .chip').forEach(el=>el.onclick=()=>{show[el.dataset.k]=!show[el.dataset.k];renderChips();renderChart();});
+}
+
+function themeColors(){
+  const light = theme==='light';
+  return {grid: light?'#e2e8f0':'#1e293b', tick: light?'#64748b':'#94a3b8'};
+}
+
+function renderChart(){
+  const s=seriesFor(scope), capex=capexFor(scope), tc=themeColors();
+  const labels=s.map(x=>x.mes);
+  let acc=0; const pctSerie=s.map(x=>{acc+=x.lucro; return capex? +(acc/capex*100).toFixed(2):0;});
+  const ds=[];
+  if(show.receita) ds.push({type:'bar',label:'Receita',data:s.map(x=>x.receita),backgroundColor:CORES.receita,yAxisID:'y',order:3});
+  if(show.despesas) ds.push({type:'bar',label:'Despesas',data:s.map(x=>x.despesas),backgroundColor:CORES.despesas,yAxisID:'y',order:3});
+  if(show.lucro) ds.push({type:'line',label:'Lucro',data:s.map(x=>x.lucro),borderColor:CORES.lucro,backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:.25,yAxisID:'y',order:1});
+  if(show.pctmes) ds.push({type:'line',label:'% do mês / CAPEX',data:s.map(x=>capex? +(x.lucro/capex*100).toFixed(2):0),borderColor:CORES.pctmes,backgroundColor:'transparent',borderDash:[2,3],borderWidth:2,pointRadius:0,tension:.25,yAxisID:'y2',order:0});
+  if(show.pct) ds.push({type:'line',label:'% acum. do CAPEX',data:pctSerie,borderColor:CORES.pct,backgroundColor:'transparent',borderDash:[5,4],borderWidth:2,pointRadius:0,tension:.25,yAxisID:'y2',order:0});
+  if(chart) chart.destroy();
+  chart=new Chart(document.getElementById('chart'),{data:{labels,datasets:ds},options:{
+    responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:tc.tick}},tooltip:{callbacks:{label:c=>{
+      const v=c.raw; return c.dataset.yAxisID==='y2'? `${c.dataset.label}: ${(''+v).replace('.',',')}%` : `${c.dataset.label}: ${money(v)}`;}}}},
+    scales:{
+      x:{ticks:{color:tc.tick,maxTicksLimit:14},grid:{color:tc.grid}},
+      y:{ticks:{color:tc.tick,callback:v=>'R$ '+(v/1000).toFixed(0)+'k'},grid:{color:tc.grid}},
+      y2:{position:'right',display:show.pct||show.pctmes,ticks:{color:tc.tick,callback:v=>v+'%'},grid:{drawOnChartArea:false}},
+    }}});
+}
+
+function periodStats(sc, n){
+  const op=opMonths(sc); const win = n? op.slice(-n) : op; // n null => todos (Total usa acumulado completo)
+  return win;
+}
+function renderPeriodos(){
+  const sc=scope, capex=capexFor(sc), all=seriesFor(sc);
+  const cols=[['LM',1],['L3M',3],['L6M',6]];
+  function agg(win, isTotal){
+    const rec=sum(win,'receita'), desp=sum(win,'despesas'), luc=sum(win,'lucro');
+    const nmes=win.length||1;
+    return {rec,desp,luc, margem: rec? luc/rec:0, mensal: luc/nmes, roi: capex? (luc/nmes*12)/capex:0, pctcap: capex? luc/capex:0};
+  }
+  const data={};
+  cols.forEach(([lbl,n])=>data[lbl]=agg(periodStats(sc,n)));
+  data['Total']=agg(all, true);
+  const rows=[
+    ['Receita', d=>money(d.rec)],
+    ['Despesas', d=>money(d.desp)],
+    ['Lucro', d=>({v:money(d.luc),cls:d.luc>=0?'pos':'neg'})],
+    ['Margem (lucro/receita)', d=>pct(d.margem)],
+    ['Lucro médio/mês', d=>money(d.mensal)],
+    ['ROI anualizado', d=>pct(d.roi)],
+    ['% do CAPEX no período', d=>pct(d.pctcap)],
+  ];
+  const head=`<thead><tr><th>Métrica</th><th>LM</th><th>L3M</th><th>L6M</th><th>Total</th></tr></thead>`;
+  const keys=['LM','L3M','L6M','Total'];
+  const body=rows.map(([label,f])=>{
+    const tds=keys.map(k=>{const r=f(data[k]); return typeof r==='object'?`<td class="${r.cls}">${r.v}</td>`:`<td>${r}</td>`;}).join('');
+    return `<tr><td>${label}</td>${tds}</tr>`;
+  }).join('');
+  document.getElementById('periodos').innerHTML=head+'<tbody>'+body+'</tbody>';
+}
+
+function renderComp(){
+  const head=`<thead><tr><th>Usina</th><th>CAPEX</th><th>Receita acum.</th><th>Lucro acum.</th><th>Lucro/mês (3m)</th><th>ROI/ano</th><th>Payback</th><th>% CAPEX rec.</th></tr></thead>`;
+  const cores={'Usina 1':'#16a34a','Usina 2':'#2563eb'};
+  const rows=UK.map(k=>{const kp=kpis(k);
+    return `<tr><td><span class="dot" style="background:${cores[k]}"></span>${DATA.nomes[k]}</td>`+
+      `<td>${money(kp.capex)}</td><td>${money(kp.recAcum)}</td><td>${money(kp.lucroAcum)}</td>`+
+      `<td>${money(kp.rr)}</td><td>${pct(kp.roi)}</td><td>${kp.payback?kp.payback.toFixed(1)+' anos':'—'}</td><td>${pct(kp.pctRec)}</td></tr>`;}).join('');
+  document.getElementById('comp').innerHTML=head+'<tbody>'+rows+'</tbody>';
+}
+
+function renderAll(){ renderCards(); renderChart(); renderPeriodos(); renderComp(); }
+
+document.querySelectorAll('#scope button').forEach(b=>b.onclick=()=>{
+  scope=b.dataset.s;
+  document.querySelectorAll('#scope button').forEach(x=>x.classList.toggle('on',x===b));
+  renderAll();
+});
+document.querySelectorAll('#theme button').forEach(b=>b.onclick=()=>{
+  theme=b.dataset.t;
+  document.body.classList.toggle('light', theme==='light');
+  document.querySelectorAll('#theme button').forEach(x=>x.classList.toggle('on',x===b));
+  renderChart();
+});
+
+document.getElementById('sub').textContent =
+  `Imposto normalizado ${pct(DATA.imposto)} (Lucro Presumido) · dados por competência (accrual)` +
+  (DATA.atualizado ? ` · atualizado em ${DATA.atualizado}` : '');
+document.getElementById('footer').innerHTML =
+  'ROI é do ativo; cada sócio detém 20%. Reformas pós-obra = OPEX. Cada usina paga ~3 meses de CEMIG antes da 1ª receita '+
+  '(ramp inicial). O imposto de '+pct(DATA.imposto)+' incide sobre a receita de TODO mês do modelo (entra em Despesas e Lucro), '+
+  'então KPIs, gráfico e tabelas já saem líquidos de imposto — normalizar evita a distorção dos DARFs atrasados do histórico real. '+
+  'O acerto do Luiz (0,5%/mês) corre por fora, na planilha de CAPEX.';
+
+renderChips();
+renderAll();
+</script></body></html>
