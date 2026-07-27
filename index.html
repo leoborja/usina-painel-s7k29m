@@ -28,6 +28,7 @@
   .card-v{font-size:23px;font-weight:700;margin:6px 0 2px} .card-s{color:var(--mut);font-size:12px}
   .panel{background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--bd);margin-bottom:22px}
   .panel h2{font-size:16px;margin:0 0 6px} .panel .hint{color:var(--mut);font-size:12px;margin:0 0 14px}
+  .chartbox{position:relative;height:340px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
   .chip{background:var(--chip);border:1px solid var(--bd);color:var(--mut);border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px}
   .chip.on{color:var(--tx);border-color:var(--accent)}
@@ -47,6 +48,7 @@
     .grid{grid-template-columns:repeat(2,1fr);gap:10px}
     .card{padding:13px} .card-v{font-size:19px}
     .panel{padding:15px}
+    .chartbox{height:300px}
     table{font-size:12.5px;min-width:520px} th,td{padding:7px 8px}
     #comp table,#comp{min-width:640px}
   }
@@ -74,7 +76,8 @@
     <h2>Desempenho mensal (competência)</h2>
     <p class="hint">Escolha as séries. Barras = valores do mês; linha = lucro; linha pontilhada = quanto do CAPEX já foi recuperado (acumulado).</p>
     <div class="chips" id="chips"></div>
-    <canvas id="chart" height="108"></canvas>
+    <div class="chartbox"><canvas id="chart"></canvas></div>
+    <div class="scroll" style="margin-top:18px"><table id="mensal"></table></div>
   </div>
 
   <div class="panel">
@@ -170,7 +173,7 @@ function renderChart(){
   if(show.pct) ds.push({type:'line',label:'% acum. do CAPEX',data:pctSerie,borderColor:CORES.pct,backgroundColor:'transparent',borderDash:[5,4],borderWidth:2,pointRadius:0,tension:.25,yAxisID:'y2',order:0});
   if(chart) chart.destroy();
   chart=new Chart(document.getElementById('chart'),{data:{labels,datasets:ds},options:{
-    responsive:true,interaction:{mode:'index',intersect:false},
+    responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
     plugins:{legend:{labels:{color:tc.tick}},tooltip:{callbacks:{label:c=>{
       const v=c.raw; return c.dataset.yAxisID==='y2'? `${c.dataset.label}: ${(''+v).replace('.',',')}%` : `${c.dataset.label}: ${money(v)}`;}}}},
     scales:{
@@ -213,6 +216,18 @@ function renderPeriodos(){
   document.getElementById('periodos').innerHTML=head+'<tbody>'+body+'</tbody>';
 }
 
+function renderMensal(){
+  const s=seriesFor(scope), capex=capexFor(scope);
+  let acc=0;
+  const head=`<thead><tr><th>Mês</th><th>Receita</th><th>Despesas</th><th>Lucro</th><th>% mês</th><th>% acum.</th></tr></thead>`;
+  const body=s.map(x=>{acc+=x.lucro;
+    const cls=x.lucro>=0?'pos':'neg';
+    return `<tr><td>${x.mes}</td><td>${money(x.receita)}</td><td>${money(x.despesas)}</td>`+
+      `<td class="${cls}">${money(x.lucro)}</td><td>${pct(capex?x.lucro/capex:0)}</td><td>${pct(capex?acc/capex:0)}</td></tr>`;
+  }).join('');
+  document.getElementById('mensal').innerHTML=head+'<tbody>'+body+'</tbody>';
+}
+
 function renderComp(){
   const head=`<thead><tr><th>Usina</th><th>CAPEX</th><th>Receita acum.</th><th>Lucro acum.</th><th>Lucro/mês (3m)</th><th>ROI/ano</th><th>Payback</th><th>% CAPEX rec.</th></tr></thead>`;
   const cores={'Usina 1':'#16a34a','Usina 2':'#2563eb'};
@@ -223,7 +238,7 @@ function renderComp(){
   document.getElementById('comp').innerHTML=head+'<tbody>'+rows+'</tbody>';
 }
 
-function renderAll(){ renderCards(); renderChart(); renderPeriodos(); renderComp(); }
+function renderAll(){ renderCards(); renderChart(); renderMensal(); renderPeriodos(); renderComp(); }
 
 document.querySelectorAll('#scope button').forEach(b=>b.onclick=()=>{
   scope=b.dataset.s;
