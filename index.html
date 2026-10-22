@@ -41,10 +41,10 @@
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
   .note{color:var(--mut);font-size:12px;line-height:1.6}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .bar .seg{flex-wrap:wrap}
+  .seg button{white-space:nowrap}
   @media (max-width:640px){
     .wrap{padding:18px 13px 48px} h1{font-size:20px} .sub{font-size:12px}
-    .bar{gap:8px} .seg{flex:1} .seg button{flex:1;padding:9px 8px;font-size:12.5px}
+    .bar{gap:8px} .seg{flex:1 0 100%} .seg button{flex:1;padding:9px 6px;font-size:12px}
     #theme{flex:1 0 100%} .spacer{display:none}
     .grid{grid-template-columns:repeat(2,1fr);gap:10px}
     .card{padding:13px} .card-v{font-size:19px}
@@ -69,8 +69,8 @@
       <button data-g="tri">Trimestre</button>
     </div>
     <div class="seg" id="tax">
-      <button data-x="norm" class="on">Imposto 11,33%</button>
-      <button data-x="pago">Imposto pago (DARF)</button>
+      <button data-x="pago" class="on">Imposto pago (exato)</button>
+      <button data-x="norm">Estimativa 11,33%</button>
     </div>
     <div class="seg" id="per">
       <button data-p="all" class="on">Tudo</button>
@@ -108,10 +108,10 @@
   <p class="note" id="footer"></p>
 </div>
 <script>
-const DATA = {"atualizado": "21/10/2026", "capex": {"Usina 1": 809668.0, "Usina 2": 945505.34}, "nomes": {"Usina 1": "Usina 1 — Fazenda do Seara", "Usina 2": "Usina 2 — João A. Q. Rolla"}, "months": ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"], "mes_aberto": "2026-10", "imposto": 0.1133, "n_socios": 5, "series": {"Usina 1": [{"mes": "2025-07", "receita": 0, "cemig": 3770.22, "overhead": 2200.0, "custos": 5970.22, "ebitda": -5970.22, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 3559.45, "overhead": 2200.0, "custos": 5759.45, "ebitda": -5759.45, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 3562.82, "overhead": 2200.0, "custos": 5762.82, "ebitda": -5762.82, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-10", "receita": 22148.4, "cemig": 3641.16, "overhead": 2200.0, "custos": 5841.16, "ebitda": 16307.24, "imposto": 2509.41, "imposto_pago": 0.0}, {"mes": "2025-11", "receita": 13641.77, "cemig": 3632.45, "overhead": 2200.0, "custos": 5832.45, "ebitda": 7809.32, "imposto": 1545.61, "imposto_pago": 0.0}, {"mes": "2025-12", "receita": 25633.89, "cemig": 3732.55, "overhead": 2200.0, "custos": 5932.55, "ebitda": 19701.34, "imposto": 2904.32, "imposto_pago": 0.0}, {"mes": "2026-01", "receita": 20197.45, "cemig": 3635.98, "overhead": 2200.0, "custos": 5835.98, "ebitda": 14361.47, "imposto": 2288.37, "imposto_pago": 0.0}, {"mes": "2026-02", "receita": 21882.56, "cemig": 3708.7, "overhead": 2200.0, "custos": 5908.7, "ebitda": 15973.86, "imposto": 2479.29, "imposto_pago": 0.0}, {"mes": "2026-03", "receita": 22837.14, "cemig": 3774.12, "overhead": 2200.0, "custos": 5974.12, "ebitda": 16863.02, "imposto": 2587.45, "imposto_pago": 2587.44}, {"mes": "2026-04", "receita": 24381.52, "cemig": 5341.99, "overhead": 2200.0, "custos": 7541.99, "ebitda": 16839.53, "imposto": 2762.43, "imposto_pago": 7643.64}, {"mes": "2026-05", "receita": 22882.75, "cemig": 5519.53, "overhead": 1191.22, "custos": 6710.75, "ebitda": 16172.0, "imposto": 2592.62, "imposto_pago": 2861.63}, {"mes": "2026-06", "receita": 16569.22, "cemig": 5685.75, "overhead": 1130.51, "custos": 6816.26, "ebitda": 9752.96, "imposto": 1877.29, "imposto_pago": 471.79}, {"mes": "2026-07", "receita": 26022.0, "cemig": 5583.35, "overhead": 1200.25, "custos": 6783.6, "ebitda": 19238.4, "imposto": 2948.29, "imposto_pago": 6864.47}, {"mes": "2026-08", "receita": 16551.69, "cemig": 5402.75, "overhead": 1072.67, "custos": 6475.42, "ebitda": 10076.27, "imposto": 1875.31, "imposto_pago": 702.09}, {"mes": "2026-09", "receita": 18623.62, "cemig": 5481.63, "overhead": 1119.17, "custos": 6600.8, "ebitda": 12022.82, "imposto": 2110.06, "imposto_pago": 0.0}, {"mes": "2026-10", "receita": 5285.09, "cemig": 0.0, "overhead": 1083.5, "custos": 1083.5, "ebitda": 4201.59, "imposto": 598.8, "imposto_pago": 0.0}], "Usina 2": [{"mes": "2025-07", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-10", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-11", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-12", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-01", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-02", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-03", "receita": 0.0, "cemig": 5188.44, "overhead": 0.0, "custos": 5188.44, "ebitda": -5188.44, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-04", "receita": 0.0, "cemig": 5445.76, "overhead": 0.0, "custos": 5445.76, "ebitda": -5445.76, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-05", "receita": 19378.31, "cemig": 5851.57, "overhead": 1008.78, "custos": 6860.35, "ebitda": 12517.96, "imposto": 2195.56, "imposto_pago": 2423.38}, {"mes": "2026-06", "receita": 15674.89, "cemig": 5834.88, "overhead": 1069.49, "custos": 6904.37, "ebitda": 8770.52, "imposto": 1775.97, "imposto_pago": 446.32}, {"mes": "2026-07", "receita": 21675.12, "cemig": 5436.78, "overhead": 999.75, "custos": 6436.53, "ebitda": 15238.59, "imposto": 2455.79, "imposto_pago": 5717.78}, {"mes": "2026-08", "receita": 17395.14, "cemig": 5540.8, "overhead": 1127.33, "custos": 6668.13, "ebitda": 10727.01, "imposto": 1970.87, "imposto_pago": 737.87}, {"mes": "2026-09", "receita": 17985.73, "cemig": 0.0, "overhead": 1080.83, "custos": 1080.83, "ebitda": 16904.9, "imposto": 2037.78, "imposto_pago": 0.0}, {"mes": "2026-10", "receita": 5446.07, "cemig": 0.0, "overhead": 1116.5, "custos": 1116.5, "ebitda": 4329.57, "imposto": 617.04, "imposto_pago": 0.0}]}, "lucro_real_acum": 196591.44};
+const DATA = {"atualizado": "21/10/2026", "capex": {"Usina 1": 809668.0, "Usina 2": 945505.34}, "nomes": {"Usina 1": "Usina 1 — Fazenda do Seara", "Usina 2": "Usina 2 — João A. Q. Rolla"}, "months": ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"], "mes_aberto": "2026-10", "imposto": 0.1133, "n_socios": 5, "series": {"Usina 1": [{"mes": "2025-07", "receita": 0, "cemig": 3770.22, "overhead": 2200.0, "custos": 5970.22, "ebitda": -5970.22, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 3559.45, "overhead": 2200.0, "custos": 5759.45, "ebitda": -5759.45, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 3562.82, "overhead": 2200.0, "custos": 5762.82, "ebitda": -5762.82, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-10", "receita": 22148.4, "cemig": 3641.16, "overhead": 2200.0, "custos": 5841.16, "ebitda": 16307.24, "imposto": 2509.41, "imposto_pago": 0.0}, {"mes": "2025-11", "receita": 13641.77, "cemig": 3632.45, "overhead": 2200.0, "custos": 5832.45, "ebitda": 7809.32, "imposto": 1545.61, "imposto_pago": 0.0}, {"mes": "2025-12", "receita": 25633.89, "cemig": 3732.55, "overhead": 2200.0, "custos": 5932.55, "ebitda": 19701.34, "imposto": 2904.32, "imposto_pago": 0.0}, {"mes": "2026-01", "receita": 20197.45, "cemig": 3635.98, "overhead": 2200.0, "custos": 5835.98, "ebitda": 14361.47, "imposto": 2288.37, "imposto_pago": 0.0}, {"mes": "2026-02", "receita": 21882.56, "cemig": 3708.7, "overhead": 2200.0, "custos": 5908.7, "ebitda": 15973.86, "imposto": 2479.29, "imposto_pago": 0.0}, {"mes": "2026-03", "receita": 22837.14, "cemig": 3774.12, "overhead": 2200.0, "custos": 5974.12, "ebitda": 16863.02, "imposto": 2587.45, "imposto_pago": 2587.44}, {"mes": "2026-04", "receita": 24381.52, "cemig": 5341.99, "overhead": 2200.0, "custos": 7541.99, "ebitda": 16839.53, "imposto": 2762.43, "imposto_pago": 9672.29}, {"mes": "2026-05", "receita": 22882.75, "cemig": 5519.53, "overhead": 1191.22, "custos": 6710.75, "ebitda": 16172.0, "imposto": 2592.62, "imposto_pago": 4765.58}, {"mes": "2026-06", "receita": 16569.22, "cemig": 5685.75, "overhead": 1130.51, "custos": 6816.26, "ebitda": 9752.96, "imposto": 1877.29, "imposto_pago": 3458.88}, {"mes": "2026-07", "receita": 26022.0, "cemig": 5583.35, "overhead": 1200.25, "custos": 6783.6, "ebitda": 19238.4, "imposto": 2948.29, "imposto_pago": 3452.04}, {"mes": "2026-08", "receita": 16551.69, "cemig": 5402.75, "overhead": 1072.67, "custos": 6475.42, "ebitda": 10076.27, "imposto": 1875.31, "imposto_pago": 1875.3}, {"mes": "2026-09", "receita": 18623.62, "cemig": 5481.63, "overhead": 1119.17, "custos": 6600.8, "ebitda": 12022.82, "imposto": 2110.06, "imposto_pago": 2110.06}, {"mes": "2026-10", "receita": 5285.09, "cemig": 0.0, "overhead": 1083.5, "custos": 1083.5, "ebitda": 4201.59, "imposto": 598.8, "imposto_pago": 0.0}], "Usina 2": [{"mes": "2025-07", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-10", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-11", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-12", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-01", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-02", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-03", "receita": 0.0, "cemig": 5188.44, "overhead": 0.0, "custos": 5188.44, "ebitda": -5188.44, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-04", "receita": 0.0, "cemig": 5445.76, "overhead": 0.0, "custos": 5445.76, "ebitda": -5445.76, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-05", "receita": 19378.31, "cemig": 5851.57, "overhead": 1008.78, "custos": 6860.35, "ebitda": 12517.96, "imposto": 2195.56, "imposto_pago": 4035.74}, {"mes": "2026-06", "receita": 15674.89, "cemig": 5834.88, "overhead": 1069.49, "custos": 6904.37, "ebitda": 8770.52, "imposto": 1775.97, "imposto_pago": 3272.19}, {"mes": "2026-07", "receita": 21675.12, "cemig": 5436.78, "overhead": 999.75, "custos": 6436.53, "ebitda": 15238.59, "imposto": 2455.79, "imposto_pago": 2875.39}, {"mes": "2026-08", "receita": 17395.14, "cemig": 5540.8, "overhead": 1127.33, "custos": 6668.13, "ebitda": 10727.01, "imposto": 1970.87, "imposto_pago": 1970.87}, {"mes": "2026-09", "receita": 17985.73, "cemig": 0.0, "overhead": 1080.83, "custos": 1080.83, "ebitda": 16904.9, "imposto": 2037.78, "imposto_pago": 2037.78}, {"mes": "2026-10", "receita": 5446.07, "cemig": 0.0, "overhead": 1116.5, "custos": 1116.5, "ebitda": 4329.57, "imposto": 617.04, "imposto_pago": 0.0}]}, "lucro_real_acum": 196591.44, "darf_total": 42113.56, "darf_fora": 0};
 const UK = ['Usina 1','Usina 2'];
 const CORES = {receita:'#22c55e', custos:'#ef4444', imposto:'#f97316', ebitda:'#14b8a6', lucro:'#3b82f6', pct:'#f59e0b', pctmes:'#a855f7'};
-let scope = 'Ambas', gran = 'mes', taxMode = 'norm', per = 'all';
+let scope = 'Ambas', gran = 'mes', taxMode = 'pago', per = 'all';
 let show = {receita:true, custos:false, imposto:false, ebitda:true, lucro:true, pct:false, pctmes:false};
 let theme = 'light';
 let chart = null;
@@ -176,10 +176,10 @@ function renderCards(){
   const k=kpis(scope);
   const cards=[
     ['CAPEX '+(scope==='Ambas'?'(2 usinas)':'('+scope+')'), money(k.capex), 'investimento na construção'],
-    ['Lucro acumulado (modelo)', money(k.lucroAcum), k.nOp+' meses com receita'],
+    ['Lucro acumulado', money(k.lucroAcum), k.nOp+' meses com receita'],
     ['ROI/ano', pct(k.roi), 'sobre run-rate dos últimos 3m'],
     ['Payback', k.payback? k.payback.toFixed(1)+' anos':'—', 'no ritmo atual'],
-    ['% do CAPEX recuperado', pct(k.pctRec), 'lucro modelo ÷ CAPEX'],
+    ['% do CAPEX recuperado', pct(k.pctRec), 'lucro ÷ CAPEX'],
     ['Lucro/mês (run-rate)', money(k.rr), 'média últimos 3 meses'],
   ];
   document.getElementById('cards').innerHTML = cards.map(c=>
@@ -208,7 +208,7 @@ function renderChart(){
   const labels=s.map(x=>x.label);
   let acc=v.acc0; const pctSerie=s.map(x=>{acc+=x.lucro; return capex? +(acc/capex*100).toFixed(2):0;});
   const ds=[];
-  const impLbl = taxMode==='pago' ? 'Imposto pago (DARF)' : 'Imposto 11,33%';
+  const impLbl = taxMode==='pago' ? 'Imposto pago' : 'Estimativa 11,33%';
   if(show.receita) ds.push({type:'bar',label:'Receita',data:s.map(x=>x.receita),backgroundColor:CORES.receita,yAxisID:'y',order:3});
   if(show.custos) ds.push({type:'bar',label:'Custos op.',data:s.map(x=>x.custos),backgroundColor:CORES.custos,yAxisID:'y',order:3});
   if(show.imposto) ds.push({type:'bar',label:impLbl,data:s.map(x=>x.imp),backgroundColor:CORES.imposto,yAxisID:'y',order:3});
@@ -249,9 +249,9 @@ function renderPeriodos(){
     ['Custos operacionais', d=>money(d.cus)],
     ['EBITDA', d=>({v:money(d.eb),cls:d.eb>=0?'pos':'neg'})],
     ['Margem EBITDA', d=>pct(d.mEb)],
-    ['Imposto 11,33% (modelo)', d=>money(d.impn)],
-    ['Imposto pago (DARF)', d=>money(d.impp)],
-    ['Lucro (EBITDA − imposto '+(taxMode==='pago'?'pago':'11,33%')+')', d=>({v:money(d.luc),cls:d.luc>=0?'pos':'neg'})],
+    ['Imposto pago (exato)', d=>money(d.impp)],
+    ['Estimativa 11,33% (comparação)', d=>money(d.impn)],
+    ['Lucro (EBITDA − imposto '+(taxMode==='pago'?'pago':'estimado')+')', d=>({v:money(d.luc),cls:d.luc>=0?'pos':'neg'})],
     ['Margem (lucro/receita)', d=>pct(d.margem)],
     ['Lucro médio/mês', d=>money(d.mensal)],
     ['ROI anualizado', d=>pct(d.roi)],
@@ -270,17 +270,17 @@ function renderMensal(){
   const v=viewRows(scope), s=v.rows, capex=capexFor(scope);
   let acc=v.acc0;
   const per1 = gran==='tri'?'Trimestre':'Mês';
-  const head=`<thead><tr><th>${per1}</th><th>Receita</th><th>Custos op.</th><th>EBITDA</th><th>Imposto 11,33%</th><th>Imposto pago (DARF)</th><th>Lucro</th><th>% período</th><th>% acum.</th></tr></thead>`;
+  const head=`<thead><tr><th>${per1}</th><th>Receita</th><th>Custos op.</th><th>EBITDA</th><th>Imposto pago (exato)</th><th>Estimativa 11,33%</th><th>Lucro</th><th>% período</th><th>% acum.</th></tr></thead>`;
   const tot={receita:0,custos:0,ebitda:0,imposto:0,imposto_pago:0,lucro:0};
   const body=s.map(x=>{acc+=x.lucro; Object.keys(tot).forEach(k=>tot[k]+=x[k]);
     const cls=x.lucro>=0?'pos':'neg', ce=x.ebitda>=0?'pos':'neg';
     const hi = k => (taxMode==='norm'&&k==='imposto')||(taxMode==='pago'&&k==='imposto_pago') ? ' style="font-weight:700"' : '';
     return `<tr><td>${x.label}</td><td>${money(x.receita)}</td><td>${money(x.custos)}</td><td class="${ce}">${money(x.ebitda)}</td>`+
-      `<td${hi('imposto')}>${money(x.imposto)}</td><td${hi('imposto_pago')}>${money(x.imposto_pago)}</td>`+
+      `<td${hi('imposto_pago')}>${money(x.imposto_pago)}</td><td${hi('imposto')} style="color:var(--mut)">${money(x.imposto)}</td>`+
       `<td class="${cls}">${money(x.lucro)}</td><td>${pct(capex?x.lucro/capex:0)}</td><td>${pct(capex?acc/capex:0)}</td></tr>`;
   }).join('');
   const foot=`<tr style="font-weight:700"><td>Total do filtro</td><td>${money(tot.receita)}</td><td>${money(tot.custos)}</td><td>${money(tot.ebitda)}</td>`+
-    `<td>${money(tot.imposto)}</td><td>${money(tot.imposto_pago)}</td><td>${money(tot.lucro)}</td><td>${pct(capex?tot.lucro/capex:0)}</td><td></td></tr>`;
+    `<td>${money(tot.imposto_pago)}</td><td style="color:var(--mut)">${money(tot.imposto)}</td><td>${money(tot.lucro)}</td><td>${pct(capex?tot.lucro/capex:0)}</td><td></td></tr>`;
   document.getElementById('mensal').innerHTML=head+'<tbody>'+body+foot+'</tbody>';
   document.getElementById('perf-t').textContent = (gran==='tri'?'Desempenho trimestral':'Desempenho mensal') +
     (per==='all'?'':' — '+(per==='2026'?'2026':'últimos 12 meses'));
@@ -319,14 +319,14 @@ document.querySelectorAll('#theme button').forEach(b=>b.onclick=()=>{
 });
 
 document.getElementById('sub').textContent =
-  `Imposto: normalizado ${pct(DATA.imposto)} (Lucro Presumido) ou o DARF pago · dados por mês de recebimento` +
+  `Imposto = valor exato pago (DARFs, no mês a que se referem) · dados por mês de recebimento` +
   (DATA.atualizado ? ` · atualizado em ${DATA.atualizado}` : '');
 document.getElementById('footer').innerHTML =
   'ROI é do ativo; cada sócio detém 20%. Reformas pós-obra = OPEX. Cada usina paga ~3 meses de CEMIG antes da 1ª receita '+
-  '(ramp inicial). O imposto de '+pct(DATA.imposto)+' incide sobre a receita de TODO mês do modelo (entra em Despesas e Lucro), '+
-  'então KPIs, gráfico e tabelas já saem líquidos de imposto — normalizar evita a distorção dos DARFs atrasados do histórico real. '+
+  '(ramp inicial). KPIs, gráfico e tabelas saem líquidos do imposto escolhido no botão (padrão: o pago). '+
   'O acerto do Luiz (0,5%/mês) corre por fora, na planilha de CAPEX. '+
-  '<b>Imposto pago (DARF)</b> = DARFs do extrato no mês em que foram pagos (o imposto de um mês costuma ser pago no mês seguinte, e há DARFs atrasados de jan–fev/2026 pagos em mai–jun), rateado entre as usinas pela receita. '+
+  '<b>Imposto pago (exato)</b> = soma dos DARFs da tabela da aba Impostos ('+money(DATA.darf_total)+'), cada um no mês a que se refere (IRPJ/CSLL trimestral rateado nos 3 meses pela receita); entre as usinas, rateado pela receita do mês. '+
+  'Os DARFs de 13/05 e 08/06 incluem impostos atrasados de meses anteriores, por isso abr e mai pesam mais. A estimativa de 11,33% fica só pra comparação. '+
   '<b>EBITDA</b> = receita − CEMIG − custos fixos (seguro, contador etc., estimados em R$ 2,2k/mês e rateados pela receita), antes de PIS/COFINS/IRPJ/CSLL.';
 
 renderChips();
