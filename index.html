@@ -41,6 +41,7 @@
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
   .note{color:var(--mut);font-size:12px;line-height:1.6}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .bar .seg{flex-wrap:wrap}
   @media (max-width:640px){
     .wrap{padding:18px 13px 48px} h1{font-size:20px} .sub{font-size:12px}
     .bar{gap:8px} .seg{flex:1} .seg button{flex:1;padding:9px 8px;font-size:12.5px}
@@ -63,6 +64,19 @@
       <button data-s="Usina 1">Usina 1</button>
       <button data-s="Usina 2">Usina 2</button>
     </div>
+    <div class="seg" id="gran">
+      <button data-g="mes" class="on">Mês</button>
+      <button data-g="tri">Trimestre</button>
+    </div>
+    <div class="seg" id="tax">
+      <button data-x="norm" class="on">Imposto 11,33%</button>
+      <button data-x="pago">Imposto pago (DARF)</button>
+    </div>
+    <div class="seg" id="per">
+      <button data-p="all" class="on">Tudo</button>
+      <button data-p="12">Últ. 12m</button>
+      <button data-p="2026">2026</button>
+    </div>
     <div class="spacer"></div>
     <div class="seg" id="theme">
       <button data-t="light" class="on">☀️ Claro</button>
@@ -73,8 +87,8 @@
   <div class="grid" id="cards"></div>
 
   <div class="panel">
-    <h2>Desempenho mensal (competência)</h2>
-    <p class="hint">Escolha as séries. Barras = valores do mês; linha = lucro; linha pontilhada = quanto do CAPEX já foi recuperado (acumulado).</p>
+    <h2 id="perf-t">Desempenho mensal</h2>
+    <p class="hint">Escolha as séries. Barras = receita, custos e imposto; linhas = EBITDA e lucro; pontilhadas = quanto do CAPEX já foi recuperado. <b>EBITDA</b> = receita − custos operacionais (CEMIG + seguro/contador/etc.), antes de qualquer imposto. <b>Lucro</b> = EBITDA − imposto.</p>
     <div class="chips" id="chips"></div>
     <div class="chartbox"><canvas id="chart"></canvas></div>
     <div class="scroll" style="margin-top:18px"><table id="mensal"></table></div>
@@ -94,11 +108,11 @@
   <p class="note" id="footer"></p>
 </div>
 <script>
-const DATA = {"atualizado": "21/10/2026", "capex": {"Usina 1": 809668.0, "Usina 2": 945505.34}, "nomes": {"Usina 1": "Usina 1 — Fazenda do Seara", "Usina 2": "Usina 2 — João A. Q. Rolla"}, "months": ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"], "mes_aberto": "2026-10", "imposto": 0.1133, "n_socios": 5, "series": {"Usina 1": [{"mes": "2025-07", "receita": 0, "cemig": 3770.22, "imposto": 0.0, "overhead": 2200.0, "despesas": 5970.22, "lucro": -5970.22}, {"mes": "2025-08", "receita": 0, "cemig": 3559.45, "imposto": 0.0, "overhead": 2200.0, "despesas": 5759.45, "lucro": -5759.45}, {"mes": "2025-09", "receita": 0, "cemig": 3562.82, "imposto": 0.0, "overhead": 2200.0, "despesas": 5762.82, "lucro": -5762.82}, {"mes": "2025-10", "receita": 22148.4, "cemig": 3641.16, "imposto": 2509.41, "overhead": 2200.0, "despesas": 8350.57, "lucro": 13797.83}, {"mes": "2025-11", "receita": 13641.77, "cemig": 3632.45, "imposto": 1545.61, "overhead": 2200.0, "despesas": 7378.06, "lucro": 6263.71}, {"mes": "2025-12", "receita": 25633.89, "cemig": 3732.55, "imposto": 2904.32, "overhead": 2200.0, "despesas": 8836.87, "lucro": 16797.02}, {"mes": "2026-01", "receita": 20197.45, "cemig": 3635.98, "imposto": 2288.37, "overhead": 2200.0, "despesas": 8124.35, "lucro": 12073.1}, {"mes": "2026-02", "receita": 21882.56, "cemig": 3708.7, "imposto": 2479.29, "overhead": 2200.0, "despesas": 8387.99, "lucro": 13494.57}, {"mes": "2026-03", "receita": 22837.14, "cemig": 3774.12, "imposto": 2587.45, "overhead": 2200.0, "despesas": 8561.57, "lucro": 14275.57}, {"mes": "2026-04", "receita": 24381.52, "cemig": 5341.99, "imposto": 2762.43, "overhead": 2200.0, "despesas": 10304.42, "lucro": 14077.1}, {"mes": "2026-05", "receita": 22882.75, "cemig": 5519.53, "imposto": 2592.62, "overhead": 1191.22, "despesas": 9303.36, "lucro": 13579.39}, {"mes": "2026-06", "receita": 16569.22, "cemig": 5685.75, "imposto": 1877.29, "overhead": 1130.51, "despesas": 8693.55, "lucro": 7875.67}, {"mes": "2026-07", "receita": 26022.0, "cemig": 5583.35, "imposto": 2948.29, "overhead": 1200.25, "despesas": 9731.89, "lucro": 16290.11}, {"mes": "2026-08", "receita": 16551.69, "cemig": 5402.75, "imposto": 1875.31, "overhead": 1072.67, "despesas": 8350.73, "lucro": 8200.96}, {"mes": "2026-09", "receita": 18623.62, "cemig": 5481.63, "imposto": 2110.06, "overhead": 1119.17, "despesas": 8710.85, "lucro": 9912.77}, {"mes": "2026-10", "receita": 5285.09, "cemig": 0.0, "imposto": 598.8, "overhead": 1083.5, "despesas": 1682.3, "lucro": 3602.79}], "Usina 2": [{"mes": "2025-07", "receita": 0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-10", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-11", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2025-12", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2026-01", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2026-02", "receita": 0.0, "cemig": 0.0, "imposto": 0.0, "overhead": 0.0, "despesas": 0.0, "lucro": 0.0}, {"mes": "2026-03", "receita": 0.0, "cemig": 5188.44, "imposto": 0.0, "overhead": 0.0, "despesas": 5188.44, "lucro": -5188.44}, {"mes": "2026-04", "receita": 0.0, "cemig": 5445.76, "imposto": 0.0, "overhead": 0.0, "despesas": 5445.76, "lucro": -5445.76}, {"mes": "2026-05", "receita": 19378.31, "cemig": 5851.57, "imposto": 2195.56, "overhead": 1008.78, "despesas": 9055.92, "lucro": 10322.39}, {"mes": "2026-06", "receita": 15674.89, "cemig": 5834.88, "imposto": 1775.97, "overhead": 1069.49, "despesas": 8680.34, "lucro": 6994.55}, {"mes": "2026-07", "receita": 21675.12, "cemig": 5436.78, "imposto": 2455.79, "overhead": 999.75, "despesas": 8892.32, "lucro": 12782.8}, {"mes": "2026-08", "receita": 17395.14, "cemig": 5540.8, "imposto": 1970.87, "overhead": 1127.33, "despesas": 8639.0, "lucro": 8756.14}, {"mes": "2026-09", "receita": 17985.73, "cemig": 0.0, "imposto": 2037.78, "overhead": 1080.83, "despesas": 3118.62, "lucro": 14867.11}, {"mes": "2026-10", "receita": 5446.07, "cemig": 0.0, "imposto": 617.04, "overhead": 1116.5, "despesas": 1733.54, "lucro": 3712.53}]}, "lucro_real_acum": 196591.44};
+const DATA = {"atualizado": "21/10/2026", "capex": {"Usina 1": 809668.0, "Usina 2": 945505.34}, "nomes": {"Usina 1": "Usina 1 — Fazenda do Seara", "Usina 2": "Usina 2 — João A. Q. Rolla"}, "months": ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"], "mes_aberto": "2026-10", "imposto": 0.1133, "n_socios": 5, "series": {"Usina 1": [{"mes": "2025-07", "receita": 0, "cemig": 3770.22, "overhead": 2200.0, "custos": 5970.22, "ebitda": -5970.22, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 3559.45, "overhead": 2200.0, "custos": 5759.45, "ebitda": -5759.45, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 3562.82, "overhead": 2200.0, "custos": 5762.82, "ebitda": -5762.82, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-10", "receita": 22148.4, "cemig": 3641.16, "overhead": 2200.0, "custos": 5841.16, "ebitda": 16307.24, "imposto": 2509.41, "imposto_pago": 0.0}, {"mes": "2025-11", "receita": 13641.77, "cemig": 3632.45, "overhead": 2200.0, "custos": 5832.45, "ebitda": 7809.32, "imposto": 1545.61, "imposto_pago": 0.0}, {"mes": "2025-12", "receita": 25633.89, "cemig": 3732.55, "overhead": 2200.0, "custos": 5932.55, "ebitda": 19701.34, "imposto": 2904.32, "imposto_pago": 0.0}, {"mes": "2026-01", "receita": 20197.45, "cemig": 3635.98, "overhead": 2200.0, "custos": 5835.98, "ebitda": 14361.47, "imposto": 2288.37, "imposto_pago": 0.0}, {"mes": "2026-02", "receita": 21882.56, "cemig": 3708.7, "overhead": 2200.0, "custos": 5908.7, "ebitda": 15973.86, "imposto": 2479.29, "imposto_pago": 0.0}, {"mes": "2026-03", "receita": 22837.14, "cemig": 3774.12, "overhead": 2200.0, "custos": 5974.12, "ebitda": 16863.02, "imposto": 2587.45, "imposto_pago": 2587.44}, {"mes": "2026-04", "receita": 24381.52, "cemig": 5341.99, "overhead": 2200.0, "custos": 7541.99, "ebitda": 16839.53, "imposto": 2762.43, "imposto_pago": 7643.64}, {"mes": "2026-05", "receita": 22882.75, "cemig": 5519.53, "overhead": 1191.22, "custos": 6710.75, "ebitda": 16172.0, "imposto": 2592.62, "imposto_pago": 2861.63}, {"mes": "2026-06", "receita": 16569.22, "cemig": 5685.75, "overhead": 1130.51, "custos": 6816.26, "ebitda": 9752.96, "imposto": 1877.29, "imposto_pago": 471.79}, {"mes": "2026-07", "receita": 26022.0, "cemig": 5583.35, "overhead": 1200.25, "custos": 6783.6, "ebitda": 19238.4, "imposto": 2948.29, "imposto_pago": 6864.47}, {"mes": "2026-08", "receita": 16551.69, "cemig": 5402.75, "overhead": 1072.67, "custos": 6475.42, "ebitda": 10076.27, "imposto": 1875.31, "imposto_pago": 702.09}, {"mes": "2026-09", "receita": 18623.62, "cemig": 5481.63, "overhead": 1119.17, "custos": 6600.8, "ebitda": 12022.82, "imposto": 2110.06, "imposto_pago": 0.0}, {"mes": "2026-10", "receita": 5285.09, "cemig": 0.0, "overhead": 1083.5, "custos": 1083.5, "ebitda": 4201.59, "imposto": 598.8, "imposto_pago": 0.0}], "Usina 2": [{"mes": "2025-07", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-08", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-09", "receita": 0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-10", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-11", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2025-12", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-01", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-02", "receita": 0.0, "cemig": 0.0, "overhead": 0.0, "custos": 0.0, "ebitda": 0.0, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-03", "receita": 0.0, "cemig": 5188.44, "overhead": 0.0, "custos": 5188.44, "ebitda": -5188.44, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-04", "receita": 0.0, "cemig": 5445.76, "overhead": 0.0, "custos": 5445.76, "ebitda": -5445.76, "imposto": 0.0, "imposto_pago": 0.0}, {"mes": "2026-05", "receita": 19378.31, "cemig": 5851.57, "overhead": 1008.78, "custos": 6860.35, "ebitda": 12517.96, "imposto": 2195.56, "imposto_pago": 2423.38}, {"mes": "2026-06", "receita": 15674.89, "cemig": 5834.88, "overhead": 1069.49, "custos": 6904.37, "ebitda": 8770.52, "imposto": 1775.97, "imposto_pago": 446.32}, {"mes": "2026-07", "receita": 21675.12, "cemig": 5436.78, "overhead": 999.75, "custos": 6436.53, "ebitda": 15238.59, "imposto": 2455.79, "imposto_pago": 5717.78}, {"mes": "2026-08", "receita": 17395.14, "cemig": 5540.8, "overhead": 1127.33, "custos": 6668.13, "ebitda": 10727.01, "imposto": 1970.87, "imposto_pago": 737.87}, {"mes": "2026-09", "receita": 17985.73, "cemig": 0.0, "overhead": 1080.83, "custos": 1080.83, "ebitda": 16904.9, "imposto": 2037.78, "imposto_pago": 0.0}, {"mes": "2026-10", "receita": 5446.07, "cemig": 0.0, "overhead": 1116.5, "custos": 1116.5, "ebitda": 4329.57, "imposto": 617.04, "imposto_pago": 0.0}]}, "lucro_real_acum": 196591.44};
 const UK = ['Usina 1','Usina 2'];
-const CORES = {receita:'#22c55e', despesas:'#ef4444', lucro:'#3b82f6', pct:'#f59e0b', pctmes:'#a855f7'};
-let scope = 'Ambas';
-let show = {receita:true, despesas:false, lucro:true, pct:false, pctmes:false};
+const CORES = {receita:'#22c55e', custos:'#ef4444', imposto:'#f97316', ebitda:'#14b8a6', lucro:'#3b82f6', pct:'#f59e0b', pctmes:'#a855f7'};
+let scope = 'Ambas', gran = 'mes', taxMode = 'norm', per = 'all';
+let show = {receita:true, custos:false, imposto:false, ebitda:true, lucro:true, pct:false, pctmes:false};
 let theme = 'light';
 let chart = null;
 
@@ -106,14 +120,37 @@ const fmt = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maxim
 const money = v => fmt.format(v||0);
 const pct = v => (v*100).toFixed(1).replace('.',',')+'%';
 
+const NUM = ['receita','cemig','overhead','custos','ebitda','imposto','imposto_pago'];
+// imposto usado no lucro: normalizado (11,33%) ou o DARF realmente pago no mês
+function finish(o){
+  o.imp = taxMode==='pago' ? o.imposto_pago : o.imposto;
+  o.despesas = o.custos + o.imp;
+  o.lucro = o.ebitda - o.imp;
+  return o;
+}
 function seriesFor(sc){
-  if(sc!=='Ambas') return DATA.series[sc];
-  return DATA.months.map((m,i)=>{
-    const a=DATA.series['Usina 1'][i], b=DATA.series['Usina 2'][i];
-    const o={mes:m};
-    ['receita','cemig','imposto','overhead','despesas','lucro'].forEach(k=>o[k]=a[k]+b[k]);
-    return o;
-  });
+  const base = sc!=='Ambas' ? DATA.series[sc].map(x=>({...x})) :
+    DATA.months.map((m,i)=>{
+      const a=DATA.series['Usina 1'][i], b=DATA.series['Usina 2'][i], o={mes:m};
+      NUM.forEach(k=>o[k]=a[k]+b[k]); return o;
+    });
+  return base.map(finish);
+}
+// agrupa por trimestre (rótulo 3T/26); trimestre com o mês aberto vira "(parcial)"
+function triKey(m){ const y=m.slice(2,4), q=Math.floor((+m.slice(5,7)-1)/3)+1; return q+'T/'+y; }
+function grouped(s){
+  if(gran==='mes') return s.map(x=>({...x, label:x.mes+(x.mes===DATA.mes_aberto?' (parcial)':'')}));
+  const out=[], idx={};
+  s.forEach(x=>{const k=triKey(x.mes);
+    if(!(k in idx)){idx[k]=out.length; out.push({label:k, mes:x.mes, parcial:false}); NUM.concat(['imp','despesas','lucro']).forEach(f=>out[idx[k]][f]=0);}
+    const o=out[idx[k]]; NUM.concat(['imp','despesas','lucro']).forEach(f=>o[f]+=x[f]);
+    if(x.mes===DATA.mes_aberto) o.parcial=true;});
+  return out.map(o=>({...o, label:o.label+(o.parcial?' (parcial)':'')}));
+}
+function filtered(s){
+  if(per==='2026') return s.filter(x=>x.mes>='2026-01');
+  if(per==='12'){ const ms=s.map(x=>x.mes); return s.slice(Math.max(0,ms.length-12)); }
+  return s;
 }
 const capexFor = sc => sc!=='Ambas' ? DATA.capex[sc] : DATA.capex['Usina 1']+DATA.capex['Usina 2'];
 
@@ -149,8 +186,13 @@ function renderCards(){
     `<div class="card"><div class="card-t">${c[0]}</div><div class="card-v">${c[1]}</div><div class="card-s">${c[2]}</div></div>`).join('');
 }
 
+function accBefore(s, firstMes){ return s.filter(x=>x.mes<firstMes).reduce((a,x)=>a+x.lucro,0); }
+function viewRows(sc){
+  const s=seriesFor(sc), f=filtered(s);
+  return {all:s, rows:grouped(f), acc0: f.length? accBefore(s,f[0].mes):0};
+}
 function renderChips(){
-  const defs=[['receita','Receita'],['despesas','Despesas'],['lucro','Lucro'],['pctmes','% do mês / CAPEX'],['pct','% acum. do CAPEX']];
+  const defs=[['receita','Receita'],['custos','Custos op.'],['imposto','Imposto'],['ebitda','EBITDA'],['lucro','Lucro'],['pctmes','% do período / CAPEX'],['pct','% acum. do CAPEX']];
   document.getElementById('chips').innerHTML = defs.map(([k,lbl])=>
     `<span class="chip ${show[k]?'on':''}" data-k="${k}"><span class="sw" style="background:${CORES[k]}"></span>${lbl}</span>`).join('');
   document.querySelectorAll('#chips .chip').forEach(el=>el.onclick=()=>{show[el.dataset.k]=!show[el.dataset.k];renderChips();renderChart();});
@@ -162,14 +204,17 @@ function themeColors(){
 }
 
 function renderChart(){
-  const s=seriesFor(scope), capex=capexFor(scope), tc=themeColors();
-  const labels=s.map(x=>x.mes);
-  let acc=0; const pctSerie=s.map(x=>{acc+=x.lucro; return capex? +(acc/capex*100).toFixed(2):0;});
+  const v=viewRows(scope), s=v.rows, capex=capexFor(scope), tc=themeColors();
+  const labels=s.map(x=>x.label);
+  let acc=v.acc0; const pctSerie=s.map(x=>{acc+=x.lucro; return capex? +(acc/capex*100).toFixed(2):0;});
   const ds=[];
+  const impLbl = taxMode==='pago' ? 'Imposto pago (DARF)' : 'Imposto 11,33%';
   if(show.receita) ds.push({type:'bar',label:'Receita',data:s.map(x=>x.receita),backgroundColor:CORES.receita,yAxisID:'y',order:3});
-  if(show.despesas) ds.push({type:'bar',label:'Despesas',data:s.map(x=>x.despesas),backgroundColor:CORES.despesas,yAxisID:'y',order:3});
+  if(show.custos) ds.push({type:'bar',label:'Custos op.',data:s.map(x=>x.custos),backgroundColor:CORES.custos,yAxisID:'y',order:3});
+  if(show.imposto) ds.push({type:'bar',label:impLbl,data:s.map(x=>x.imp),backgroundColor:CORES.imposto,yAxisID:'y',order:3});
+  if(show.ebitda) ds.push({type:'line',label:'EBITDA',data:s.map(x=>x.ebitda),borderColor:CORES.ebitda,backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:.25,yAxisID:'y',order:1});
   if(show.lucro) ds.push({type:'line',label:'Lucro',data:s.map(x=>x.lucro),borderColor:CORES.lucro,backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:.25,yAxisID:'y',order:1});
-  if(show.pctmes) ds.push({type:'line',label:'% do mês / CAPEX',data:s.map(x=>capex? +(x.lucro/capex*100).toFixed(2):0),borderColor:CORES.pctmes,backgroundColor:'transparent',borderDash:[2,3],borderWidth:2,pointRadius:0,tension:.25,yAxisID:'y2',order:0});
+  if(show.pctmes) ds.push({type:'line',label:'% do período / CAPEX',data:s.map(x=>capex? +(x.lucro/capex*100).toFixed(2):0),borderColor:CORES.pctmes,backgroundColor:'transparent',borderDash:[2,3],borderWidth:2,pointRadius:0,tension:.25,yAxisID:'y2',order:0});
   if(show.pct) ds.push({type:'line',label:'% acum. do CAPEX',data:pctSerie,borderColor:CORES.pct,backgroundColor:'transparent',borderDash:[5,4],borderWidth:2,pointRadius:0,tension:.25,yAxisID:'y2',order:0});
   if(chart) chart.destroy();
   chart=new Chart(document.getElementById('chart'),{data:{labels,datasets:ds},options:{
@@ -191,17 +236,22 @@ function renderPeriodos(){
   const sc=scope, capex=capexFor(sc), all=seriesFor(sc);
   const cols=[['LM',1],['L3M',3],['L6M',6]];
   function agg(win, isTotal){
-    const rec=sum(win,'receita'), desp=sum(win,'despesas'), luc=sum(win,'lucro');
+    const rec=sum(win,'receita'), cus=sum(win,'custos'), eb=sum(win,'ebitda'), imp=sum(win,'imp'),
+          impn=sum(win,'imposto'), impp=sum(win,'imposto_pago'), luc=sum(win,'lucro');
     const nmes=win.length||1;
-    return {rec,desp,luc, margem: rec? luc/rec:0, mensal: luc/nmes, roi: capex? (luc/nmes*12)/capex:0, pctcap: capex? luc/capex:0};
+    return {rec,cus,eb,imp,impn,impp,luc, mEb: rec? eb/rec:0, margem: rec? luc/rec:0, mensal: luc/nmes, roi: capex? (luc/nmes*12)/capex:0, pctcap: capex? luc/capex:0};
   }
   const data={};
   cols.forEach(([lbl,n])=>data[lbl]=agg(periodStats(sc,n)));
   data['Total']=agg(all, true);
   const rows=[
     ['Receita', d=>money(d.rec)],
-    ['Despesas', d=>money(d.desp)],
-    ['Lucro', d=>({v:money(d.luc),cls:d.luc>=0?'pos':'neg'})],
+    ['Custos operacionais', d=>money(d.cus)],
+    ['EBITDA', d=>({v:money(d.eb),cls:d.eb>=0?'pos':'neg'})],
+    ['Margem EBITDA', d=>pct(d.mEb)],
+    ['Imposto 11,33% (modelo)', d=>money(d.impn)],
+    ['Imposto pago (DARF)', d=>money(d.impp)],
+    ['Lucro (EBITDA − imposto '+(taxMode==='pago'?'pago':'11,33%')+')', d=>({v:money(d.luc),cls:d.luc>=0?'pos':'neg'})],
     ['Margem (lucro/receita)', d=>pct(d.margem)],
     ['Lucro médio/mês', d=>money(d.mensal)],
     ['ROI anualizado', d=>pct(d.roi)],
@@ -217,15 +267,23 @@ function renderPeriodos(){
 }
 
 function renderMensal(){
-  const s=seriesFor(scope), capex=capexFor(scope);
-  let acc=0;
-  const head=`<thead><tr><th>Mês</th><th>Receita</th><th>Despesas</th><th>Lucro</th><th>% mês</th><th>% acum.</th></tr></thead>`;
-  const body=s.map(x=>{acc+=x.lucro;
-    const cls=x.lucro>=0?'pos':'neg';
-    return `<tr><td>${x.mes}</td><td>${money(x.receita)}</td><td>${money(x.despesas)}</td>`+
+  const v=viewRows(scope), s=v.rows, capex=capexFor(scope);
+  let acc=v.acc0;
+  const per1 = gran==='tri'?'Trimestre':'Mês';
+  const head=`<thead><tr><th>${per1}</th><th>Receita</th><th>Custos op.</th><th>EBITDA</th><th>Imposto 11,33%</th><th>Imposto pago (DARF)</th><th>Lucro</th><th>% período</th><th>% acum.</th></tr></thead>`;
+  const tot={receita:0,custos:0,ebitda:0,imposto:0,imposto_pago:0,lucro:0};
+  const body=s.map(x=>{acc+=x.lucro; Object.keys(tot).forEach(k=>tot[k]+=x[k]);
+    const cls=x.lucro>=0?'pos':'neg', ce=x.ebitda>=0?'pos':'neg';
+    const hi = k => (taxMode==='norm'&&k==='imposto')||(taxMode==='pago'&&k==='imposto_pago') ? ' style="font-weight:700"' : '';
+    return `<tr><td>${x.label}</td><td>${money(x.receita)}</td><td>${money(x.custos)}</td><td class="${ce}">${money(x.ebitda)}</td>`+
+      `<td${hi('imposto')}>${money(x.imposto)}</td><td${hi('imposto_pago')}>${money(x.imposto_pago)}</td>`+
       `<td class="${cls}">${money(x.lucro)}</td><td>${pct(capex?x.lucro/capex:0)}</td><td>${pct(capex?acc/capex:0)}</td></tr>`;
   }).join('');
-  document.getElementById('mensal').innerHTML=head+'<tbody>'+body+'</tbody>';
+  const foot=`<tr style="font-weight:700"><td>Total do filtro</td><td>${money(tot.receita)}</td><td>${money(tot.custos)}</td><td>${money(tot.ebitda)}</td>`+
+    `<td>${money(tot.imposto)}</td><td>${money(tot.imposto_pago)}</td><td>${money(tot.lucro)}</td><td>${pct(capex?tot.lucro/capex:0)}</td><td></td></tr>`;
+  document.getElementById('mensal').innerHTML=head+'<tbody>'+body+foot+'</tbody>';
+  document.getElementById('perf-t').textContent = (gran==='tri'?'Desempenho trimestral':'Desempenho mensal') +
+    (per==='all'?'':' — '+(per==='2026'?'2026':'últimos 12 meses'));
 }
 
 function renderComp(){
@@ -245,6 +303,14 @@ document.querySelectorAll('#scope button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#scope button').forEach(x=>x.classList.toggle('on',x===b));
   renderAll();
 });
+function seg(id, attr, set){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
+    set(b.dataset[attr]);
+    document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b));
+    renderAll();
+  });
+}
+seg('gran','g',v=>gran=v); seg('tax','x',v=>taxMode=v); seg('per','p',v=>per=v);
 document.querySelectorAll('#theme button').forEach(b=>b.onclick=()=>{
   theme=b.dataset.t;
   document.body.classList.toggle('light', theme==='light');
@@ -253,13 +319,15 @@ document.querySelectorAll('#theme button').forEach(b=>b.onclick=()=>{
 });
 
 document.getElementById('sub').textContent =
-  `Imposto normalizado ${pct(DATA.imposto)} (Lucro Presumido) · dados por competência (accrual)` +
+  `Imposto: normalizado ${pct(DATA.imposto)} (Lucro Presumido) ou o DARF pago · dados por mês de recebimento` +
   (DATA.atualizado ? ` · atualizado em ${DATA.atualizado}` : '');
 document.getElementById('footer').innerHTML =
   'ROI é do ativo; cada sócio detém 20%. Reformas pós-obra = OPEX. Cada usina paga ~3 meses de CEMIG antes da 1ª receita '+
   '(ramp inicial). O imposto de '+pct(DATA.imposto)+' incide sobre a receita de TODO mês do modelo (entra em Despesas e Lucro), '+
   'então KPIs, gráfico e tabelas já saem líquidos de imposto — normalizar evita a distorção dos DARFs atrasados do histórico real. '+
-  'O acerto do Luiz (0,5%/mês) corre por fora, na planilha de CAPEX.';
+  'O acerto do Luiz (0,5%/mês) corre por fora, na planilha de CAPEX. '+
+  '<b>Imposto pago (DARF)</b> = DARFs do extrato no mês em que foram pagos (o imposto de um mês costuma ser pago no mês seguinte, e há DARFs atrasados de jan–fev/2026 pagos em mai–jun), rateado entre as usinas pela receita. '+
+  '<b>EBITDA</b> = receita − CEMIG − custos fixos (seguro, contador etc., estimados em R$ 2,2k/mês e rateados pela receita), antes de PIS/COFINS/IRPJ/CSLL.';
 
 renderChips();
 renderAll();
